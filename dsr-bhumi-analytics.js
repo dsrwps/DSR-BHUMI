@@ -1,1 +1,1 @@
-hello ji
+alert("this is github");
