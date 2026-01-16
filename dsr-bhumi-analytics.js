@@ -1,7 +1,3 @@
-let API_URL ="https://script.google.com/macros/s/AKfycbx0IAKCeHB5zretevdD5wXawTRt34DbJy27s1WtZngpDijM63ns1wQ1p0A0UMh5kKZ0eA/exec";
- let TOKEN = "wifi-dsr-bhumi";
- 
-
 // GENRATE UNIC ID
 function unique10(){
   let arr = new Uint32Array(1);
@@ -44,10 +40,12 @@ function deviceInfoFun(){
 // CLICKS COUNT INFO
 function clicksInfoFun(){
   let clicks = JSON.parse(localStorage.getItem("clicks") || "{}");
-  let page = location.pathname || "home";
+  let title = (document.title || "").trim();
+  if(!title){ title = (location.pathname.split("/").pop() || "home.html").replace(/\.html$/i,""); }
   document.addEventListener("click", function(e){
-    clicks[page] = (clicks[page] || 0) + 1;
+    clicks[title] = (clicks[title] || 0) + 1;
     clicks.total = (clicks.total || 0) + 1;
+    clicks.entryTime = formatDate(new Date());
     localStorage.setItem("clicks", JSON.stringify(clicks));
   });
   //data.clicksInfo = JSON.stringify(clicks);
@@ -58,9 +56,11 @@ function clicksInfoFun(){
 // VIEWS COUNT
 function viewsCountFun(){
   let views = JSON.parse(localStorage.getItem("views") || "{}");
-  let page = location.pathname || "home";
-  views[page] = (views[page] || 0) + 1;
+  let title = (document.title || "").trim();
+  if(!title){ title = (location.pathname.split("/").pop() || "home.html").replace(/\.html$/i,""); }
+  views[title] = (views[title] || 0) + 1;
   views.total = (views.total || 0) + 1;
+  views.entryTime = formatDate(new Date());
   localStorage.setItem("views", JSON.stringify(views));
   //data.viewsInfo = JSON.stringify(views);
   data.viewsInfo = views;
@@ -69,37 +69,16 @@ function viewsCountFun(){
 
 // TITLE HISTORY
 function titleHisFun(){
-  let title = document.title.trim();
+  let title = (document.title || "").trim();
+  if(!title){ title = (location.pathname.split("/").pop() || "home.html").replace(/\.html$/i,""); }
   let history = JSON.parse(localStorage.getItem("titleHistory") || "[]");
-  if(history[history.length - 1] !== title){ history.push(title); }
-  while(JSON.stringify(history).length > 49000){ history.shift(); }
+  let historyObj = { title: title, entryTime: formatDate(new Date()) };
+  history.push({...historyObj});
+  while(JSON.stringify(history).length > 59000){ history.shift(); }
   localStorage.setItem("titleHistory", JSON.stringify(history));
   //data.titleHistory = JSON.stringify(history);
   data.titleHistory = history;
 } titleHisFun();
-
-
-// PAGE VISIT INFO
-function pageVisitTracker(){
-  let page = location.pathname || "home";
-  let startStamp = Date.now();
-  let visits = JSON.parse(localStorage.getItem("pageVisits") || "[]");
-  let visitObj = { page: page, entryTime: formatDate(new Date()), exitTime: "", staySeconds: 0, reason: "" };
-  visits.push(visitObj); let saved = false;
-  function saveExit(reason){
-    alert("ok save");
-    if(saved){ return; } saved = true;
-    let diff = Math.floor((Date.now() - startStamp)/1000);
-    visitObj.exitTime = formatDate(new Date());
-    visitObj.staySeconds = diff; visitObj.reason = reason;
-    localStorage.setItem("pageVisits", JSON.stringify(visits));
-    //data.pageVisitInfo = JSON.stringify(visitObj);
-    data.pageVisitInfo = visitObj;
-  }
-  window.addEventListener("beforeunload", ()=>saveExit("tab_close_or_refresh_or_back"));
-  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") saveExit("tab_change_or_background"); });
-  window.addEventListener("popstate", ()=>saveExit("browser_back_or_forward"));
-} pageVisitTracker();
 
 
 // SCREEN INFO
@@ -169,7 +148,7 @@ function sendDataServer(){ let idIsHas = true;
   if(idIsHas){ data.action ="up"; }else{ data.action ="in"; }
   data.id = localStorage.getItem("id").trim();
   data.name = localStorage.getItem("name").trim();
-  data.token =TOKEN; data.dateTime = formatDate();
+  /*data.token =TOKEN;*/ data.dateTime = formatDate();
   
   /*$.post(API_URL, data, function(data,status,xhr){
     if(idIsHas && data.result ==="error" && data.code === 404 && status === "success"){ localStorage.removeItem("id"); sendDataServer(); }
@@ -189,4 +168,3 @@ window.ondblclick = function(){
      }
   }
 }
-
