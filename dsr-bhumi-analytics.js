@@ -87,6 +87,7 @@ function pageVisitTracker(){
   let visitObj = { page: page, entryTime: formatDate(new Date()), exitTime: "", staySeconds: 0, reason: "" };
   visits.push(visitObj); let saved = false;
   function saveExit(reason){
+    alert("ok save");
     if(saved){ return; } saved = true;
     let diff = Math.floor((Date.now() - startStamp)/1000);
     visitObj.exitTime = formatDate(new Date());
